@@ -1,0 +1,59 @@
+# AI Employee - Python Dependencies
+# ==================================
+# Install with: pip install -r requirements.txt
+
+# Core Dependencies (Bronze Tier)
+# -----------------
+
+# File system watching for drop folder monitoring
+watchdog>=4.0.0
+
+# PDF processing (for document handling)
+pypdf>=6.0.0
+
+# Enhanced PDF text extraction
+pdfplumber>=0.11.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# HTTP requests (for API calls)
+requests>=2.31.0
+
+# Data processing and CSV handling
+pandas>=2.0.0
+
+# OpenRouter AI Brain (FREE API - Recommended)
+openai>=1.0.0
+
+# ======================================
+# Silver Tier Dependencies
+# ======================================
+
+# Gmail API (for Gmail Watcher and Email MCP)
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+google-api-python-client>=2.100.0
+
+# LinkedIn automation (Playwright)
+playwright>=1.40.0
+
+# After installing playwright, run:
+# playwright install
+
+# ======================================
+# Multi-Tenant / Commercial Features
+# ======================================
+
+# Supabase - FREE multi-tenant backend
+supabase>=2.0.0
+
+# ======================================
+# Development Dependencies
+# ======================================
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.0.0
+# flake8>=6.1.0
+# mypy>=1.5.0

@@ -1,0 +1,6 @@
+2026-03-27 22:55:17 - Orchestrator - WARNING - OpenRouter Brain initialization failed: No models available. Tried: nvidia/nemotron-3-nano-30b-a3b:free, nvidia/nemotron-3-nano-30b-a3b:free, openai/gpt-oss-20b:free, qwen/qwen3-4b:free, qwen/qwen3-next-80b-a3b-instruct:free, qwen/qwen3-coder:free
+Check your API key at: https://openrouter.ai/keys
+2026-03-27 22:55:17 - Orchestrator - INFO - Orchestrator initialized for vault: AI_Employee_Vault
+2026-03-27 22:55:17 - Orchestrator - INFO - Starting Orchestrator...
+2026-03-27 22:55:17 - Orchestrator - INFO - Starting watcher processes...
+2026-03-27 22:55:17 - Orchestrator - INFO - FileSystemWatcher started

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Employee Dashboard - Enhanced</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .stat-card h3 {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card.success .value { color: var(--success); }
+        .stat-card.warning .value { color: var(--warning); }
+        .stat-card.danger .value { color: var(--danger); }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .btn-approve { background: var(--success); color: white; }
+        .btn-approve:hover { background: #059669; }
+        .btn-reject { background: var(--danger); color: white; }
+        .btn-reject:hover { background: #dc2626; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--border); color: var(--text); }
+        .btn-secondary:hover { background: #475569; }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; }
+
+        .email-list, .approval-list, .schedule-list, .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .email-item, .approval-item, .schedule-item, .file-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .email-item:hover, .approval-item:hover, .schedule-item:hover, .file-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--primary);
+        }
+
+        .email-item.high { border-left: 3px solid var(--danger); }
+        .email-item.medium { border-left: 3px solid var(--warning); }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .item-meta {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-posted { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-cancelled { background: rgba(100, 116, 139, 0.2); color: var(--text-muted); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 0.85rem;
+        }
+
+        .schedule-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .schedule-time {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 AI Employee Dashboard</h1>
+        <p>Enhanced Silver Tier - Full Control & Scheduling</p>
+        <div class="nav">
+            <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="showSection('emails')">📧 All Emails</button>
+            <button class="nav-btn" onclick="showSection('approvals')">✅ Approvals</button>
+            <button class="nav-btn" onclick="showSection('linkedin')">💼 LinkedIn</button>
+            <button class="nav-btn" onclick="showSection('schedule')">⏰ Scheduler</button>
+            <button class="nav-btn" onclick="showSection('history')">📁 History</button>
+            <button class="nav-btn" onclick="showSection('send')">✉️ Send</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Needs Action</h3>
+                <div class="value" id="statNeedsAction">-</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Pending Approval</h3>
+                <div class="value" id="statPending">-</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Approved</h3>
+                <div class="value" id="statApproved">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Completed</h3>
+                <div class="value" id="statDone">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Plans</h3>
+                <div class="value" id="statPlans">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Scheduled Posts</h3>
+                <div class="value" id="statScheduled">-</div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="section-content active">
+            <div class="section">
+                <h2>📈 Recent Activity <button class="btn btn-sm btn-secondary" onclick="loadDashboard()">🔄 Refresh</button></h2>
+                <div class="activity-log" id="activityLog"><div class="loading">Loading...</div></div>
+            </div>
+            <div class="section">
+                <h2>⚡ Quick Actions</h2>
+                <button class="btn btn-primary" onclick="runOrchestrator()">🔄 Run Orchestrator</button>
+                <button class="btn btn-primary" onclick="showSection('emails')">📧 Check Emails</button>
+                <button class="btn btn-primary" onclick="showSection('schedule')">⏰ Schedule Post</button>
+            </div>
+        </div>
+
+        <!-- Emails -->
+        <div id="emails" class="section-content">
+            <div class="section">
+                <h2>📧 All Emails <button class="btn btn-sm btn-secondary" onclick="loadEmails()">🔄 Refresh</button></h2>
+                <div id="emailList" class="email-list"><div class="loading">Loading emails...</div></div>
+            </div>
+        </div>
+
+        <!-- Approvals -->
+        <div id="approvals" class="section-content">
+            <div class="section">
+                <h2>✅ Pending Approvals <button class="btn btn-sm btn-secondary" onclick="loadApprovals()">🔄 Refresh</button></h2>
+                <div id="approvalList" class="approval-list"><div class="loading">Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div id="linkedin" class="section-content">
+            <div class="section">
+                <h2>💼 LinkedIn Auto-Poster</h2>
+                <div id="linkedinStatus"></div>
+                <button class="btn btn-primary" onclick="testLinkedInLogin()">🔗 Test LinkedIn Login</button>
+                <button class="btn btn-secondary" onclick="generateLinkedInPost()">✨ Generate from Business Goals</button>
+                <div id="linkedinResult" style="margin-top: 1rem;"></div>
+                <div id="postNowSection" style="margin-top: 1rem; display: none;">
+                    <div class="alert alert-success">
+                        <strong>✅ LinkedIn Connected!</strong> You can now post automatically.
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="postToLinkedInNow()">🚀 Post Now</button>
+                        <button class="btn btn-secondary" onclick="showSection('schedule')">⏰ Schedule for Later</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduler -->
+        <div id="schedule" class="section-content">
+            <div class="section">
+                <h2>⏰ Schedule LinkedIn Post</h2>
+                <div id="scheduleAlert"></div>
+                <div class="form-group">
+                    <label>Post Content:</label>
+                    <textarea id="scheduleContent" placeholder="Enter your LinkedIn post content..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Schedule For:</label>
+                    <input type="datetime-local" id="scheduleTime">
+                </div>
+                <button class="btn btn-primary" onclick="createSchedule()">⏰ Schedule Post</button>
+                <button class="btn btn-secondary" onclick="generateLinkedInPost()">✨ Generate Content</button>
+            </div>
+            <div class="section">
+                <h2>📅 Upcoming Scheduled Posts</h2>
+                <div id="scheduleList" class="schedule-list"><div class="loading">Loading schedules...</div></div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div id="history" class="section-content">
+            <div class="section">
+                <h2>📁 Completed Files</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="showHistoryTab('done')">Done</button>
+                    <button class="tab" onclick="showHistoryTab('approved')">Approved</button>
+                </div>
+                <div id="doneFiles" class="file-list"></div>
+                <div id="approvedFiles" class="file-list" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Send Email -->
+        <div id="send" class="section-content">
+            <div class="section">
+                <h2>✉️ Send Email</h2>
+                <div id="sendAlert"></div>
+                <div class="form-group">
+                    <label>To:</label>
+                    <input type="email" id="emailTo" placeholder="recipient@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Subject:</label>
+                    <input type="text" id="emailSubject" placeholder="Email subject">
+                </div>
+                <div class="form-group">
+                    <label>Body:</label>
+                    <textarea id="emailBody" placeholder="Email content..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="sendEmail()">📤 Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing details -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (sectionId === 'emails') loadEmails();
+            if (sectionId === 'approvals') loadApprovals();
+            if (sectionId === 'schedule') loadSchedules();
+            if (sectionId === 'history') loadHistory();
+        }
+
+        function showHistoryTab(tab) {
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('doneFiles').style.display = tab === 'done' ? 'block' : 'none';
+            document.getElementById('approvedFiles').style.display = tab === 'approved' ? 'block' : 'none';
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/api/dashboard`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('statNeedsAction').textContent = data.stats.needs_action;
+                    document.getElementById('statPending').textContent = data.stats.pending_approval;
+                    document.getElementById('statApproved').textContent = data.stats.approved;
+                    document.getElementById('statDone').textContent = data.stats.done;
+                    document.getElementById('statPlans').textContent = data.stats.plans;
+
+                    // Load schedules count
+                    const schedResponse = await fetch(`${API_BASE}/api/schedules`);
+                    const schedData = await response.json();
+                    if (schedData.success) {
+                        const pending = schedData.schedules.filter(s => s.status === 'pending').length;
+                        document.getElementById('statScheduled').textContent = pending;
+                    }
+
+                    const logContainer = document.getElementById('activityLog');
+                    if (data.recent_activity.length > 0) {
+                        logContainer.innerHTML = data.recent_activity.map(log => `
+                            <div class="log-item" style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                                <div style="color: var(--text-muted); font-size: 0.75rem;">${new Date(log.timestamp).toLocaleString()}</div>
+                                <div>${log.action_type} - ${log.result}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        logContainer.innerHTML = '<div class="loading">No recent activity</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadEmails() {
+            try {
+                const response = await fetch(`${API_BASE}/api/emails`);
+                const data = await response.json();
+                const container = document.getElementById('emailList');
+                
+                if (data.success && data.emails.length > 0) {
+                    container.innerHTML = data.emails.map(email => `
+                        <div class="email-item ${email.priority}" onclick="viewEmail('${email.file}')">
+                            <div class="item-header">
+                                <span class="item-title">${email.subject}</span>
+                                <span class="badge priority-${email.priority}">${email.priority}</span>
+                            </div>
+                            <div class="item-meta">From: ${email.from} • ${new Date(email.received).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="loading">No emails found</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function viewEmail(filename) {
+            try {
+                const response = await fetch(`${API_BASE}/api/email/${filename}`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('modalTitle').textContent = filename;
+                    document.getElementById('modalBody').innerHTML = `<pre>${data.content}</pre>`;
+                    document.getElementById('detailModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadApprovals() {
+            try {
+                const response = await fetch(`${API_BASE}/api/approvals`);
+                const data = await response.json();
+                const container = document.getElementById('approvalList');
+                
+                if (data.success && data.approvals.length > 0) {
+                    container.innerHTML = data.approvals.map(approval => `
+                        <div class="approval-item">
+                            <div class="item-header">
+                                <span class="item-title">${approval.type} - ${approval.category}</span>
+                                <span class="badge badge-pending">Pending</span>
+                            </div>
+                            <div class="item-meta">${approval.summary}</div>
+                            <div class="item-actions">
+                                <button class="btn btn-approve btn-sm" onclick="viewApproval('${approval.file}')">👁️ View Details</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="loading">No pending approvals</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function viewApproval(filename) {
+            try {
+                const response = await fetch(`${API_BASE}/api/approvals/detail/${filename}`);
+                const data = await response.json();
+                if (data.success) {
+                    let content = `<div style="margin-bottom: 1rem;"><strong>File:</strong> ${filename}</div>`;
+                    
+                    if (data.sections.summary) {
+                        content += `<div style="margin-bottom: 1rem;"><strong>Summary:</strong><br>${data.sections.summary}</div>`;
+                    }
+                    
+                    if (data.sections['proposed actions']) {
+                        content += `<div style="margin-bottom: 1rem;"><strong>Proposed Actions:</strong><br><pre>${data.sections['proposed actions']}</pre></div>`;
+                    }
+                    
+                    if (data.sections['draft response']) {
+                        content += `<div style="margin-bottom: 1rem;"><strong>Draft Response:</strong><br><pre>${data.sections['draft response']}</pre></div>`;
+                    }
+                    
+                    content += `<div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                        <button class="btn btn-approve" onclick="approveAction('${filename}')">✓ Approve</button>
+                        <button class="btn btn-reject" onclick="rejectAction('${filename}')">✗ Reject</button>
+                    </div>`;
+                    
+                    document.getElementById('modalTitle').textContent = 'Approval Details';
+                    document.getElementById('modalBody').innerHTML = content;
+                    document.getElementById('detailModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function approveAction(filename) {
+            try {
+                const response = await fetch(`${API_BASE}/api/approve/${filename}`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    alert('✓ Action approved!');
+                    closeModal();
+                    loadApprovals();
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function rejectAction(filename) {
+            try {
+                const response = await fetch(`${API_BASE}/api/reject/${filename}`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    alert('✗ Action rejected');
+                    closeModal();
+                    loadApprovals();
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function generateLinkedInPost() {
+            try {
+                const response = await fetch(`${API_BASE}/api/linkedin/generate`, { method: 'POST' });
+                const data = await response.json();
+                const resultDiv = document.getElementById('linkedinResult');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>Generated Post:</strong>
+                            <pre style="margin-top: 0.5rem;">${data.post}</pre>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(\`${data.post.replace(/`/g, '\\`')}\`); alert('Copied!')">📋 Copy</button>
+                            <button class="btn btn-primary" onclick="document.getElementById('scheduleContent').value = \`${data.post.replace(/`/g, '\\`')}\`; showSection('schedule');">⏰ Schedule</button>
+                            <button class="btn btn-primary" onclick="document.getElementById('scheduleContent').value = \`${data.post.replace(/`/g, '\\`')}\`; postToLinkedInNow();">🚀 Post Now</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function testLinkedInLogin() {
+            const statusDiv = document.getElementById('linkedinStatus');
+            statusDiv.innerHTML = '<div class="loading">Testing LinkedIn connection...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/linkedin/test-login`, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '<div class="alert alert-success">✅ ' + data.message + '</div>';
+                    document.getElementById('postNowSection').style.display = 'block';
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-error">❌ ' + data.message + '<br><small>Make sure you have set LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables, or log in manually when the browser opens.</small></div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="alert alert-error">❌ Error: ' + error + '</div>';
+            }
+        }
+
+        async function postToLinkedInNow() {
+            const content = document.getElementById('scheduleContent').value || 
+                           (document.getElementById('linkedinResult').innerText.match(/Generated Post:[\s\S]*?(?=\n\n|$)/) || [null])[0];
+            
+            if (!content) {
+                alert('Please generate or enter post content first');
+                return;
+            }
+            
+            if (!confirm('Post this to LinkedIn now? This will open a browser window.')) {
+                return;
+            }
+            
+            const statusDiv = document.getElementById('linkedinStatus');
+            statusDiv.innerHTML = '<div class="loading">Posting to LinkedIn...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/linkedin/post-now`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '<div class="alert alert-success">✅ ' + data.message + '<br><small>Posted at: ' + new Date().toLocaleString() + '</small></div>';
+                    document.getElementById('scheduleContent').value = '';
+                    document.getElementById('linkedinResult').innerHTML = '';
+                    document.getElementById('postNowSection').style.display = 'none';
+                    loadDashboard();
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-error">❌ ' + data.message + '</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="alert alert-error">❌ Error: ' + error + '</div>';
+            }
+        }
+
+        async function loadSchedules() {
+            try {
+                const response = await fetch(`${API_BASE}/api/schedules`);
+                const data = await response.json();
+                const container = document.getElementById('scheduleList');
+                
+                if (data.success && data.schedules.length > 0) {
+                    container.innerHTML = data.schedules.map(sched => `
+                        <div class="schedule-card">
+                            <div class="item-header">
+                                <span class="badge badge-${sched.status}">${sched.status}</span>
+                                ${sched.status === 'pending' ? `<button class="btn btn-reject btn-sm" onclick="cancelSchedule('${sched.id}')">Cancel</button>` : ''}
+                            </div>
+                            <div class="schedule-time">${new Date(sched.scheduled_time).toLocaleString()}</div>
+                            <div class="item-meta">${sched.content}</div>
+                            ${sched.posted_at ? `<div class="item-meta" style="margin-top: 0.5rem;">Posted: ${new Date(sched.posted_at).toLocaleString()}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="loading">No scheduled posts</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function createSchedule() {
+            const content = document.getElementById('scheduleContent').value;
+            const scheduledTime = document.getElementById('scheduleTime').value;
+            
+            if (!content || !scheduledTime) {
+                alert('Please enter content and select a time');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/schedule`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, scheduled_time: scheduledTime })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✓ Post scheduled for ${new Date(scheduledTime).toLocaleString()}`);
+                    document.getElementById('scheduleContent').value = '';
+                    document.getElementById('scheduleTime').value = '';
+                    loadSchedules();
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function cancelSchedule(id) {
+            if (!confirm('Cancel this scheduled post?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/schedule/${id}/cancel`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Schedule cancelled');
+                    loadSchedules();
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const [doneRes, approvedRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/files/done`),
+                    fetch(`${API_BASE}/api/files/approved`)
+                ]);
+                const doneData = await doneRes.json();
+                const approvedData = await approvedRes.json();
+                
+                if (doneData.success) {
+                    document.getElementById('doneFiles').innerHTML = doneData.files.map(f => `
+                        <div class="file-item">
+                            <div class="item-title">${f.name}</div>
+                            <div class="item-meta">Modified: ${new Date(f.modified).toLocaleString()} • ${Math.round(f.size / 1024)} KB</div>
+                        </div>
+                    `).join('');
+                }
+                
+                if (approvedData.success) {
+                    document.getElementById('approvedFiles').innerHTML = approvedData.files.map(f => `
+                        <div class="file-item">
+                            <div class="item-title">${f.name}</div>
+                            <div class="item-meta">Modified: ${new Date(f.modified).toLocaleString()} • ${Math.round(f.size / 1024)} KB</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+            
+            if (!to || !subject || !body) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/send-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('sendAlert').innerHTML = '<div class="alert alert-success">✓ Email sent successfully!</div>';
+                    document.getElementById('emailTo').value = '';
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailBody').value = '';
+                } else {
+                    document.getElementById('sendAlert').innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function runOrchestrator() {
+            try {
+                const response = await fetch(`${API_BASE}/api/orchestrator/run`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    alert('✓ Orchestrator cycle completed!');
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Initialize
+        loadDashboard();
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
