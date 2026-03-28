@@ -7,7 +7,10 @@
       "Bash(npm run *)",
       "Bash(start *)",
       "Bash(taskkill *)",
-      "Bash(timeout *)"
+      "Bash(timeout *)",
+      "Bash(netstat *)",
+      "Bash(curl *)",
+      "Bash(c:\\users\\lenovo\\appdata\\local\\programs\\python\\python314\\python.exe *)"
     ]
   },
   "$version": 3

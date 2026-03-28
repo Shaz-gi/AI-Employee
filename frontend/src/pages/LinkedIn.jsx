@@ -88,25 +88,77 @@ function LinkedIn() {
   const generateWithAI = async () => {
     setGeneratingPost(true);
     try {
-      const response = await fetch('http://localhost:4000/api/linkedin/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setNewPost({ ...newPost, content: data.post });
-        setShowAiGenerateModal(false);
-        setShowScheduleModal(true);
-      } else {
-        alert('Failed to generate: ' + (data.error || 'Unknown error'));
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please log in first');
+        return;
       }
+
+      // Get user's vault
+      const { data: vaults } = await supabase
+        .from('vaults')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (!vaults || vaults.length === 0) {
+        alert('No vault found. Please create a vault first.');
+        return;
+      }
+
+      // Create a generation request in database
+      const { error } = await supabase
+        .from('linkedin_posts')
+        .insert({
+          vault_id: vaults[0].id,
+          user_id: user.id,
+          content: 'Generating...',
+          post_type: 'pending_ai_generation',
+          status: 'generating',
+          generated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error('Error creating generation request:', error);
+        alert('Failed to start AI generation: ' + error.message);
+        return;
+      }
+
+      // Poll for the generated post (check every 2 seconds for up to 30 seconds)
+      let attempts = 0;
+      const maxAttempts = 15;
+      
+      const pollInterval = setInterval(async () => {
+        attempts++;
+        
+        const { data: posts } = await supabase
+          .from('linkedin_posts')
+          .select('*')
+          .eq('vault_id', vaults[0].id)
+          .eq('status', 'pending_approval')
+          .eq('ai_generated', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (posts && posts.length > 0) {
+          // Post generated successfully!
+          clearInterval(pollInterval);
+          setGeneratingPost(false);
+          alert('✅ AI post generated successfully! Check the pending posts.');
+          loadPosts(); // Refresh the posts list
+        } else if (attempts >= maxAttempts) {
+          // Timeout
+          clearInterval(pollInterval);
+          setGeneratingPost(false);
+          alert('⏰ Generation timed out. Please try again.');
+        }
+      }, 2000);
+
     } catch (error) {
       console.error('Generation error:', error);
-      alert('Failed to generate post. Make sure the backend is running.');
-    } finally {
       setGeneratingPost(false);
+      alert('Failed to generate post: ' + error.message);
     }
   };
 

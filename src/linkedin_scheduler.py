@@ -409,6 +409,71 @@ class LinkedInScheduler:
             print(f"   ❌ Error: {e}")
             return False
 
+    def process_generation_requests(self):
+        """Handle AI generation requests from frontend."""
+        print("\n🤖 Checking for AI generation requests...")
+        
+        if not self.api_enabled:
+            return
+        
+        # Get generation requests
+        result = self.supabase_query(
+            'linkedin_posts',
+            params={
+                'status': 'eq.generating',
+                'post_type': 'eq.pending_ai_generation',
+                'select': 'id,user_id,vault_id'
+            }
+        )
+        
+        if not result or len(result) == 0:
+            print("   ✓ No generation requests")
+            return
+        
+        print(f"   ✓ Found {len(result)} generation request(s)")
+        
+        for request in result:
+            request_id = request.get('id')
+            user_id = request.get('user_id')
+            vault_id = request.get('vault_id')
+            
+            print(f"\n📝 Processing generation request for user {user_id[:8]}...")
+            
+            # Generate AI post
+            content = self.generate_post_with_ai('insight', user_id)
+            
+            if content:
+                # Update the post with generated content
+                update_result = self.supabase_query(
+                    'linkedin_posts',
+                    method='PATCH',
+                    data={
+                        'content': content,
+                        'status': 'pending_approval',
+                        'post_type': 'insight',
+                        'ai_generated': True,
+                        'generated_at': datetime.now().isoformat()
+                    },
+                    params={'id': f'eq.{request_id}'}
+                )
+                
+                if update_result:
+                    print(f"   ✅ Post generated successfully!")
+                else:
+                    print(f"   ❌ Failed to update post")
+            else:
+                # Mark as failed
+                self.supabase_query(
+                    'linkedin_posts',
+                    method='PATCH',
+                    data={
+                        'status': 'failed',
+                        'error_message': 'AI generation failed'
+                    },
+                    params={'id': f'eq.{request_id}'}
+                )
+                print(f"   ❌ AI generation failed")
+
     def process_approved_posts(self) -> int:
         """
         Process approved posts and post to LinkedIn.
@@ -489,11 +554,15 @@ class LinkedInScheduler:
         print("  1. Generate daily posts from Business_Goals.md")
         print("  2. Create approval requests")
         print("  3. Post approved content automatically")
+        print("  4. Handle AI generation requests from frontend")
         print("=" * 60)
         
         try:
             while True:
                 now = datetime.now()
+                
+                # Handle AI generation requests from frontend
+                self.process_generation_requests()
                 
                 # Generate posts at 8 AM daily
                 if now.hour == 8 and now.minute < 5:
