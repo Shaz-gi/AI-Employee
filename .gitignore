@@ -2,3 +2,5 @@ src/token.json
 src/token_email.json
 src/credentials.json
 .env
+frontend/.env
+frontend/node_modules/

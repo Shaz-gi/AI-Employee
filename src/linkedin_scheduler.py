@@ -416,13 +416,12 @@ class LinkedInScheduler:
         if not self.api_enabled:
             return
         
-        # Get generation requests
+        # Get generation requests (draft posts with AI generation content)
         result = self.supabase_query(
             'linkedin_posts',
             params={
-                'status': 'eq.generating',
-                'post_type': 'eq.pending_ai_generation',
-                'select': 'id,user_id,vault_id'
+                'status': 'eq.draft',
+                'select': 'id,user_id,vault_id,content'
             }
         )
         
@@ -430,9 +429,19 @@ class LinkedInScheduler:
             print("   ✓ No generation requests")
             return
         
-        print(f"   ✓ Found {len(result)} generation request(s)")
+        # Filter for posts that are being AI generated
+        generation_requests = [
+            r for r in result 
+            if r.get('content') == 'Generating post with AI...' or not r.get('ai_generated', False)
+        ]
         
-        for request in result:
+        if not generation_requests:
+            print("   ✓ No pending generation requests")
+            return
+        
+        print(f"   ✓ Found {len(generation_requests)} generation request(s)")
+        
+        for request in generation_requests:
             request_id = request.get('id')
             user_id = request.get('user_id')
             vault_id = request.get('vault_id')
@@ -606,4 +615,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # Fix Windows console encoding
+    import sys
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    
     main()

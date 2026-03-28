@@ -10,7 +10,9 @@
       "Bash(timeout *)",
       "Bash(netstat *)",
       "Bash(curl *)",
-      "Bash(c:\\users\\lenovo\\appdata\\local\\programs\\python\\python314\\python.exe *)"
+      "Bash(c:\\users\\lenovo\\appdata\\local\\programs\\python\\python314\\python.exe *)",
+      "Bash(tasklist)",
+      "Bash(type *)"
     ]
   },
   "$version": 3

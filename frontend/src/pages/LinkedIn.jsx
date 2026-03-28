@@ -113,9 +113,10 @@ function LinkedIn() {
         .insert({
           vault_id: vaults[0].id,
           user_id: user.id,
-          content: 'Generating...',
-          post_type: 'pending_ai_generation',
-          status: 'generating',
+          content: 'Generating post with AI...',
+          post_type: 'insight',
+          status: 'draft',
+          ai_generated: false,
           generated_at: new Date().toISOString()
         });
 
